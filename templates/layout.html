@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta http-equiv="content-type" charset="utf-8">
+    <!-- Required Stylesheets -->
+    <link href="/static/stylesheets/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/stylesheets/bootstrap-vue.min.css" rel="stylesheet">
+    <link href="/static/stylesheets/umap-original.css" rel="stylesheet">
+    <!-- Required scripts -->
+    <script src="/static/javascripts/vue.min.js"></script>
+    <script src="/static/javascripts/bootstrap-vue.min.js"></script>
+    <script src="/static/javascripts/portal-vue.umd.min.js"></script>
+    <script src="/static/javascripts/axios.min.js"></script>
+    <title>{% block title %}UMAP{% endblock %}</title>
+</head>
+
+<body class="backgroud">
+    {% include "_header.html" %}
+    {% block content %}{% endblock %}
+</body>
+
+</html>

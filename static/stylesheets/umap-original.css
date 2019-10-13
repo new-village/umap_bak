@@ -1,0 +1,12 @@
+body.backgroud { 
+    background-image: url("/static/images/nyc_image.png");
+    height: 100%; 
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+div.container {
+    padding-top: 10px;
+}
