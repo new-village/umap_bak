@@ -11,8 +11,8 @@ services:
     environment:
       - MONGO_INITDB_DATABASE:umap
     volumes:
-      - ./.umap_docker/mongo:/data/db
-      - ./.umap_docker/configdb:/data/configdb
+      - ./.docker/mongo:/data/db
+      - ./.docker/configdb:/data/configdb
 
   mongo-express:
     image: mongo-express
