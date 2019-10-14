@@ -1,6 +1,6 @@
 import responder
-import traceback
-from umap import netkeiba
+from base import common
+from crawler import sportsnavi, netkeiba
 
 api = responder.API()
 
@@ -11,15 +11,20 @@ class ViewIndex:
         resp.content = api.template("index.html")
 
 
-@api.route('/api/race/{race_id}')
-class GetData:
-    def on_get(self, req, resp, race_id):
-        try:
-            resp.headers = {"Content-Type": "application/json; charset=utf-8"}
-            resp.content = netkeiba.main(race_id)
-        except Exception:
-            traceback.print_exc()
-            resp.media = {"errmessage": "Error occured"}
+@api.route('/crawler/hold/{year_month}')
+class GetHoldData:
+    def on_get(self, req, resp, year_month):
+        sportsnavi.collect_holds(year_month)
+        msg = {"message": "Start process"}
+        common.respJson(resp, msg)
+
+
+@api.route('/crawler/race/{id}')
+class GetRaceData:
+    def on_get(self, req, resp, id):
+        msg = netkeiba.collect_races(id)
+        # msg = {"message": "Start process"}
+        common.respJson(resp, msg)
 
 
 if __name__ == '__main__':
