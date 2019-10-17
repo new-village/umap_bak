@@ -19,3 +19,18 @@ services:
     restart: always
     ports:
       - 8081:8081
+  
+  jupyterlab:
+    image: jupyter/tensorflow-notebook:latest
+    user: root
+    environment:
+      NB_UID: 1000
+      NB_GID: 100
+      GRANT_SUDO: "yes"
+    volumes:
+       - "./.docker/jupyter:/home/root/work"
+    privileged: true
+    ports:
+      - "8888:8888"
+    restart: unless-stopped
+    command: start.sh jupyter lab --NotebookApp.token=''

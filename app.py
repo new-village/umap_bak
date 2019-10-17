@@ -15,6 +15,7 @@ class ViewIndex:
 class GetHoldData:
     def on_get(self, req, resp, year_month):
         sportsnavi.collect_holds(year_month)
+        # TODO: 
         msg = {"message": "Start process"}
         common.respJson(resp, msg)
 
@@ -22,8 +23,7 @@ class GetHoldData:
 @api.route('/crawler/race/{id}')
 class GetRaceData:
     def on_get(self, req, resp, id):
-        msg = netkeiba.collect_races(id)
-        # msg = {"message": "Start process"}
+        msg = {"message": "Start process"}
         common.respJson(resp, msg)
 
 

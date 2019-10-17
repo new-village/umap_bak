@@ -27,6 +27,7 @@ def collect_holds(target):
             holds = parse_sportsnave(page)
             for hold in holds:
                 db.holds.update({"_id": hold["_id"]}, hold, upsert=True)
+            # TODO: RACEデータの取得
     else:
         return {"status": "ERROR", "message": "There is no page or element"}
 
@@ -67,7 +68,7 @@ def parse_sportsnave(page):
             hold["place_name"] = to_place_name(hold["place_id"])
             hold["days"] = int(hold["_id"][6:8])
             hold["times"] = int(hold["_id"][8:10])
-            id_list = [{"race_id": hold["_id"] + str(i + 1).zfill(2)} for i in range(12)]
+            id_list = [hold["_id"] + str(i + 1).zfill(2) for i in range(12)]
             hold["races"] = id_list
             holds.append(hold)
 
