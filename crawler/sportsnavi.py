@@ -2,34 +2,36 @@ import responder
 import re
 import datetime
 
-from crawler.common import str_fmt, to_place_name, load_page
 from base.database import vault
+from base.task import start_log, update_log
+from crawler.common import str_fmt, to_place_name, load_page
 
 api = responder.API()
 
 
 @api.background.task
 def collect_holds(target):
-    # Create Yahoo keiba URL from the argument
+    task_id = start_log("Collecting hold: " + target)
     urls = create_url_list(target)
 
-    # Load URL Pages
+    update_log(task_id, "INFO", "Load pages: " + str(len(urls)))
     if len(urls) != 0:
         pages = load_page(urls, ".layoutCol2M")
     else:
-        return {"status": "ERROR", "message": "Invalid URL parameters: " + target}
+        update_log(task_id, "ERROR", "Invalid URL parameters: " + target)
 
-    # Parse and Insert Elements
-
+    update_log(task_id, "INFO", "Parse and insert elements: " + str(len(pages)))
     if len(pages) != 0:
         db = vault()
         for page in pages:
             holds = parse_sportsnave(page)
             for hold in holds:
                 db.holds.update({"_id": hold["_id"]}, hold, upsert=True)
-            # TODO: RACEデータの取得
     else:
-        return {"status": "ERROR", "message": "There is no page or element"}
+        update_log(task_id, "ERROR", "There is no page or element")
+
+    update_log(task_id, "FINISH", "End process")
+    return
 
 
 def create_url_list(yrmo):

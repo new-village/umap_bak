@@ -2,6 +2,7 @@ import re
 import responder
 import datetime
 from base.database import vault
+from base.task import start_log, update_log
 from crawler.common import load_page, str_fmt, int_fmt, to_course_full, to_place_name
 
 api = responder.API()
@@ -9,25 +10,27 @@ api = responder.API()
 
 @api.background.task
 def collect_races(target):
-    # Create Netkeiba URL from the argument
+    task_id = start_log("Collecting race: " + target)
     urls = create_url_list(target)
 
-    # Load URL Pages
+    update_log(task_id, "INFO", "Load pages: " + str(len(urls)))
     if len(urls) != 0:
         all_pages = load_page(urls)
         pages = [page for page in all_pages if len(page.find(".race_table_old")) != 0]
     else:
-        return {"status": "ERROR", "message": "Invalid URL parameters: " + target}
+        update_log(task_id, "ERROR", "Invalid URL parameters: " + target)
 
-    # Parse and Insert Elements
+    update_log(task_id, "INFO", "Parse and insert elements: " + str(len(pages)))
     if len(pages) != 0:
         db = vault()
         for page in pages:
             race = parse_nk_race(page)
             db.races.update({"_id": race["_id"]}, race, upsert=True)
     else:
-        return {"status": "ERROR", "message": "There is no page or element"}
-    return urls
+        update_log(task_id, "ERROR", "There is no page or element")
+
+    update_log(task_id, "FINISH", "End process")
+    return
 
 
 def create_url_list(_id):
