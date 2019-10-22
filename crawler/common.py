@@ -1,22 +1,18 @@
 import re
-import time
 from requests_html import HTMLSession
 
 session = HTMLSession()
 
 
-def load_page(urls, extracted_element=None):
-    pages = []
+def load_page(_url, _check_class):
+    try:
+        page = session.get(_url).html
+        if len(page.find(_check_class)) == 0:
+            page = None
+    except Exception:
+        page = None
 
-    for url in urls:
-        r = session.get(url)
-        if extracted_element is None:
-            pages.append(r.html)
-        else:
-            pages.append(r.html.find(extracted_element, first=True))
-        time.sleep(5)
-
-    return pages
+    return page
 
 
 def int_fmt(_target, _reg):

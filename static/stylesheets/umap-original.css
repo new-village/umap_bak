@@ -10,3 +10,7 @@ body.backgroud {
 div.container {
     padding-top: 10px;
 }
+
+.pad1 {
+    margin: 0px 5px;
+}

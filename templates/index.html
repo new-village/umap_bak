@@ -1,36 +1,94 @@
 {% extends "layout.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Home{% endblock %}
 {% block content %}
-<b-container id="index">
-    <b-row>
-        <b-col md="4">
-            <b-card>
-                <b-card-text>RACE ID を指定して取得</b-card-text>
-                <b-input-group>
-                    <b-form-input v-model="race_id" type="text" placeholder="レースID"></b-form-input>
-                    <b-input-group-append>
-                        <b-button variant="success" type="submit" @click="race">実行</b-button>
-                    </b-input-group-append>
-                </b-input-group>
-            </b-card>
-        </b-col>
-    </b-row>
-</b-container>
+
+<v-app id="index">
+    <!-- NAVIGATION DRAWER -->
+    <v-navigation-drawer app v-model="drawer" color="grey lighten-5" clipped right>
+        <v-list>
+            <v-list-item-group color="primary">
+                <v-list-item href="/">
+                    <v-list-item-icon>
+                        <v-icon>mdi-home</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>Home</v-list-item-title>
+                </v-list-item>
+                <v-divider></v-divider>
+                <v-subheader>APPLICATIONS</v-subheader>
+                <v-list-item href="http://localhost:8888" target="_blank">
+                    <v-list-item-icon>
+                        <v-icon>mdi-language-python</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>JupyterLab</v-list-item-title>
+                </v-list-item>
+                <v-list-item href="http://localhost:8081" target="_blank">
+                    <v-list-item-icon>
+                        <v-icon>mdi-database-search</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-title>Mongo Express</v-list-item-title>
+                </v-list-item>
+            </v-list-item-group>
+        </v-list>
+    </v-navigation-drawer>
+
+    <!-- HEADER -->
+    <v-app-bar app clipped-left color="green darken-3" dark dense clipped-right>
+        <v-toolbar-title class="title font-weight-black">UMA Prediction</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+    </v-app-bar>
+
+    <v-content>
+        <v-container>
+            <v-row justify="center">
+                <v-col cols="12" sm="9">
+                    <v-card>
+                        <v-card-title class="font-weight-bold">最近のレース</v-card-title>
+                        <template>
+                            <v-data-table :headers="headers" :items="results" :items-per-page="5">
+                            </v-data-table>
+                        </template>
+                    </v-card>
+                </v-col>
+                <v-col cols="12" sm="3">
+                    <v-card>
+                        <v-card-title class="font-weight-bold">IDを指定して実行</v-card-title>
+                        <v-card-actions>
+                            <v-text-field v-model="race_id" :append-outer-icon="'mdi-send'" filled label="Race ID"
+                                type="text" @click:append-outer="collect"></v-text-field>
+                        </v-card-actions>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </v-container>
+    </v-content>
+</v-app>
+
 
 <script>
-    var app = new Vue({
+    new Vue({
         el: '#index',
-        data() {
-            return {
-                race_id: ''
-            }
+        vuetify: new Vuetify(),
+        data: {
+            drawer: false,
+            race_id: "201908040712",
+            headers: [
+                { text: "レース名", value: "title" },
+                { text: "開催日", value: 'date' }
+            ],
+            results: []
+        },
+        mounted: async function () {
+            await this.get_race();
         },
         methods: {
-            race: function () {
-                axios({
-                    method: 'GET',
-                    url: '/api/race/' + this.race_id
-                }).then(response => (console.log(response.data)))
+            collect: async function () {
+                await axios.post("api/races/" + this.race_id);
+                await this.get_race();
+            },
+            get_race: async function () {
+                await axios.get("api/races/" + this.race_id)
+                    .then(response => { this.results = response.data })
             }
         }
     })
