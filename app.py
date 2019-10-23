@@ -1,4 +1,5 @@
 import responder
+from datetime import datetime
 from base import common, task
 from crawler import sportsnavi, race
 
@@ -11,13 +12,29 @@ class ViewIndex:
         resp.content = api.template("index.html")
 
 
+@api.route('/api/races')
+class RaceListData:
+    def on_get(self, req, resp):
+        # Return Next Day Races
+        msg = race.recent()
+        common.respJson(resp, msg)
+
+    def on_post(self, req, resp):
+        # Collect This Month Races
+        yrmo = datetime.now().strftime('%Y%m')
+        msg = race.bulk_collect(yrmo)
+        common.respJson(resp, msg)
+
+
 @api.route('/api/races/{rid}')
-class RaceData:
+class RaceDetailData:
     def on_get(self, req, resp, rid):
-        msg = race.display(rid)
+        # Return Race ID's Race
+        msg = race.detail(rid)
         common.respJson(resp, msg)
 
     def on_post(self, req, resp, rid):
+        # Collect Race ID's Race
         msg = race.collect(rid)
         common.respJson(resp, msg)
 

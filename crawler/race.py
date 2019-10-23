@@ -1,28 +1,42 @@
 import re
-import responder
-
 from datetime import datetime
 
-from base.database import vault, conv_dict
-from crawler.common import load_page, str_fmt, int_fmt, to_course_full, to_place_name
+import pymongo
+import responder
+
+from base.database import vault, to_dict, date_condition
+from crawler.common import (int_fmt, load_page, str_fmt, to_course_full,
+                            to_place_name)
 
 api = responder.API()
 
 
-def display(_param):
+def recent():
     db = vault()
-    rec = [conv_dict(db.races.find_one({"_id": _param}))]
-    return rec
+    # Get next race date
+    where = {"date": {"$gte": datetime.now()}}
+    r = db.races.find(where).sort("date", pymongo.DESCENDING)[1]["date"]
+
+    # Get next race list
+    where = {"date": date_condition(r.year, r.month, r.day)}
+    rec = db.races.find(where).sort("_id", pymongo.ASCENDING)
+    return to_dict(rec)
 
 
-def collect(_param):
+def detail(_rid):
+    db = vault()
+    rec = db.races.find_one({"_id": _rid})
+    return to_dict(rec)
+
+
+def collect(_rid):
     # Get html
     base_url = "https://race.netkeiba.com/?pid=race_old&id=c{rid}"
-    if re.match(r"^\d{12}$", _param):
-        url = base_url.replace("{rid}", _param)
+    if re.match(r"^\d{12}$", _rid):
+        url = base_url.replace("{rid}", _rid)
         page = load_page(url, ".race_table_old")
     else:
-        return {"status": "ERROR", "message": "Invalid URL parameter: " + _param}
+        return {"status": "ERROR", "message": "Invalid URL parameter: " + _rid}
 
     # Parse race info
     if page is not None:
@@ -36,7 +50,11 @@ def collect(_param):
     else:
         return {"status": "ERROR", "message": "There is no id in page: " + race}
 
-    return {"status": "SUCCESS", "message": "Start holds collection process for " + _param}
+    return {"status": "SUCCESS", "message": "Start holds collection process for " + _rid}
+
+
+def bulk_collect(_yrmo):
+    return
 
 
 def parse_nk_race(_page):
@@ -75,6 +93,8 @@ def parse_nk_race(_page):
     date = str_fmt(row, r"\d{4}/\d{2}/\d{2}")
     row = _page.find("dl.racedata > dd > p")[1].text
     time = str_fmt(row, r"\d{2}:\d{2}")
+    if time == "":
+        time = "0:00"
     race["date"] = datetime.strptime(date + " " + time, "%Y/%m/%d %H:%M")
     # PLACE NAME
     place_code = race["_id"][4:6]

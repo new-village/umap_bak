@@ -4,7 +4,7 @@
 
 <v-app id="index">
     <!-- NAVIGATION DRAWER -->
-    <v-navigation-drawer app v-model="drawer" color="grey lighten-5" clipped right>
+    <v-navigation-drawer app v-model="drawer" color="grey lighten-2" clipped right>
         <v-list>
             <v-list-item-group color="primary">
                 <v-list-item href="/">
@@ -32,8 +32,8 @@
     </v-navigation-drawer>
 
     <!-- HEADER -->
-    <v-app-bar app clipped-left color="green darken-3" dark dense clipped-right>
-        <v-toolbar-title class="title font-weight-black">UMA Prediction</v-toolbar-title>
+    <v-app-bar app clipped-left color="deep-orange darken-4" dark dense clipped-right>
+        <v-toolbar-title href="/" class="title font-weight-black">UMA Prediction</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
     </v-app-bar>
@@ -73,13 +73,16 @@
             drawer: false,
             race_id: "201908040712",
             headers: [
+                { text: "場所", value: "place" },
+                { text: "ラウンド", value: 'round' },
                 { text: "レース名", value: "title" },
                 { text: "開催日", value: 'date' }
             ],
             results: []
         },
         mounted: async function () {
-            await this.get_race();
+            await axios.get("api/races")
+                .then(response => { this.results = response.data })
         },
         methods: {
             collect: async function () {
