@@ -1,8 +1,8 @@
 import re
-from datetime import datetime
-
 import pymongo
 import responder
+import time
+from datetime import datetime
 
 from base.database import vault, to_dict, date_condition
 from crawler.common import (int_fmt, load_page, str_fmt, to_course_full,
@@ -50,11 +50,27 @@ def collect(_rid):
     else:
         return {"status": "ERROR", "message": "There is no id in page: " + race}
 
-    return {"status": "SUCCESS", "message": "Start holds collection process for " + _rid}
+    return {"status": "SUCCESS", "message": "Start race collection process for " + _rid}
 
 
-def bulk_collect(_yrmo):
-    return
+def bulk_collect(_year, _month):
+    url = "https://keiba.yahoo.co.jp/schedule/list/" + _year + "/?month=" + _month
+    page = load_page(url, ".layoutCol2M")
+
+    # Parse race info
+    if page is not None:
+        race_id = parse_spn_rid(page)
+    else:
+        return {"status": "ERROR", "message": "There is no page: " + url}
+
+    if len(race_id) != 0:
+        for rid in race_id:
+            collect(rid)
+            time.sleep(5)
+    else:
+        return {"status": "ERROR", "message": "There is no page: " + url}
+
+    return {"status": "SUCCESS", "message": "Start bulk collection process"}
 
 
 def parse_nk_race(_page):
@@ -90,12 +106,12 @@ def parse_nk_race(_page):
     race["going"] = str_fmt(row, r"良|稍重|重|不良")
     # RACE DATE
     row = _page.find("div.race_otherdata > p", first=True).text
-    date = str_fmt(row, r"\d{4}/\d{2}/\d{2}")
+    dt = str_fmt(row, r"\d{4}/\d{2}/\d{2}")
     row = _page.find("dl.racedata > dd > p")[1].text
-    time = str_fmt(row, r"\d{2}:\d{2}")
-    if time == "":
-        time = "0:00"
-    race["date"] = datetime.strptime(date + " " + time, "%Y/%m/%d %H:%M")
+    tm = str_fmt(row, r"\d{2}:\d{2}")
+    if tm == "":
+        tm = "0:00"
+    race["date"] = datetime.strptime(dt + " " + tm, "%Y/%m/%d %H:%M")
     # PLACE NAME
     place_code = race["_id"][4:6]
     race["place"] = to_place_name(place_code)
@@ -111,3 +127,20 @@ def parse_nk_race(_page):
     race["entry"] = horses
 
     return race
+
+
+def parse_spn_rid(_page):
+    holds = []
+    for td in _page.find("table.scheLs > tbody > tr > td"):
+        links = str_fmt(str(td.links), r"/race/list/(\d+)/")
+        holds.append(links)
+
+    # Delete Blank Element
+    holds = ["20" + hold for hold in holds if hold]
+
+    # Generate race id from holds
+    rid = []
+    for hold in holds:
+        rid.extend([hold + str(i + 1).zfill(2) for i in range(12)])
+
+    return rid

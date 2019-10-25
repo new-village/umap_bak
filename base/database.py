@@ -11,6 +11,13 @@ def vault():
     return client.vault
 
 
+def ops():
+    """ Connect Vault Database on local MongoDB
+    """
+    client = pymongo.MongoClient("localhost", 27017)
+    return client.ops
+
+
 def to_dict(_bson):
     options = JSONOptions()
     options.datetime_representation = 2
@@ -20,7 +27,7 @@ def to_dict(_bson):
     # Convert String to Dictionary
     rec_dict = json.loads(rec_str)
     # Listing
-    rec_list = [rec_dict] if isinstance(rec_dict, list) else rec_dict
+    rec_list = [rec_dict] if isinstance(rec_dict, dict) else rec_dict
     # Normalize Date Field
     rec = []
     for r in rec_list:

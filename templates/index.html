@@ -43,7 +43,15 @@
             <v-row justify="center">
                 <v-col cols="12" sm="9">
                     <v-card>
-                        <v-card-title class="font-weight-bold">最近のレース</v-card-title>
+                        <v-card-title class="font-weight-bold">
+                            最近のレース
+                            <v-spacer></v-spacer>
+                            <v-icon @click="recent">mdi-refresh</v-icon>
+                            <v-snackbar v-model="snackbar" :timeout="timeout">
+                                タスクを実行しました
+                                <v-icon dark @click="snackbar = false">mdi-close-box</v-icon>
+                            </v-snackbar>
+                        </v-card-title>
                         <template>
                             <v-data-table :headers="headers" :items="results" :items-per-page="5">
                             </v-data-table>
@@ -78,7 +86,10 @@
                 { text: "レース名", value: "title" },
                 { text: "開催日", value: 'date' }
             ],
-            results: []
+            results: [],
+            snackbar: false,
+            text: 'My timeout is set to 2000.',
+            timeout: 2000,
         },
         mounted: async function () {
             await axios.get("api/races")
@@ -92,6 +103,11 @@
             get_race: async function () {
                 await axios.get("api/races/" + this.race_id)
                     .then(response => { this.results = response.data })
+            },
+            recent: async function () {
+                this.snackbar = true;
+                await axios.post("api/races");
+                await this.get_race();
             }
         }
     })

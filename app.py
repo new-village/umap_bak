@@ -1,5 +1,5 @@
 import responder
-from datetime import datetime
+from datetime import datetime, timedelta
 from base import common, task
 from crawler import sportsnavi, race
 
@@ -21,8 +21,8 @@ class RaceListData:
 
     def on_post(self, req, resp):
         # Collect This Month Races
-        yrmo = datetime.now().strftime('%Y%m')
-        msg = race.bulk_collect(yrmo)
+        now = datetime.now() + timedelta(week=1)
+        msg = race.bulk_collect(now.strftime('%Y'), now.strftime('%m'))
         common.respJson(resp, msg)
 
 
