@@ -96,21 +96,15 @@
         vuetify: new Vuetify(),
         data: {
             drawer: false,
-            race_id: "201908040712",
+            race_id: "{{ rid }}",
             results: [],
             snackbar: false,
             text: 'My timeout is set to 2000.',
             timeout: 2000,
         },
         mounted: function () {
-            axios.get("/api/races").then(response => {
-                json = response.data;
-                for (var i in json) {
-                    json[i].round = json[i].round + "R";
-                    json[i]._id = "/races/" + json[i]._id;
-                    json[i].track = json[i].track + json[i].distance + "m";
-                };
-                this.results = json
+            axios.get("/api/races/" + this.race_id).then(response => {
+                this.results = response.data;
             })
         },
         methods: {

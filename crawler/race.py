@@ -18,8 +18,10 @@ def recent():
     r = db.races.find(where).sort("date", pymongo.DESCENDING)[1]["date"]
 
     # Get next race list
+    select = {"place": 1, "round": 1, "title": 1,
+              "date": 1, "track": 1, "distance": 1}
     where = {"date": date_condition(r.year, r.month, r.day)}
-    rec = db.races.find(where).sort("_id", pymongo.ASCENDING)
+    rec = db.races.find(where, select).sort("_id", pymongo.ASCENDING)
     return to_dict(rec)
 
 

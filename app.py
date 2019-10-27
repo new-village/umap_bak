@@ -12,6 +12,12 @@ class ViewIndex:
         resp.content = api.template("index.html")
 
 
+@api.route('/races/{rid}')
+class ViewRaces:
+    def on_get(self, req, resp, rid):
+        resp.content = api.template("races.html", rid=rid)
+
+
 @api.route('/api/races')
 class RaceListData:
     def on_get(self, req, resp):
